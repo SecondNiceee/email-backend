@@ -1,27 +1,20 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { sendEmail } from "@/lib/email"
 
-// 👇 Создаём CORS-заголовки один раз
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*", // Разрешить всем
+  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 }
 
 export async function OPTIONS(request: NextRequest) {
-  // Обязательно обрабатываем OPTIONS — это preflight-запрос от браузера
-  return NextResponse.json(
-    {},
-    {
-      status: 200,
-      headers: corsHeaders,
-    }
-  )
+  return NextResponse.json({}, { status: 200, headers: corsHeaders })
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, to, subject = "Новое сообщение с сайта" } = await request.json()
+    // <CHANGE> Добавлен параметр fromName
+    const { message, to, subject = "Новое сообщение с сайта", fromName } = await request.json()
 
     if (!message || !to) {
       return NextResponse.json(
@@ -30,7 +23,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    await sendEmail(to, subject, message)
+    // <CHANGE> Передаём fromName в sendEmail
+    await sendEmail(to, subject, message, fromName)
 
     console.log("Email sent successfully to:", to)
 
